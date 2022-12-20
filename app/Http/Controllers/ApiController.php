@@ -7,201 +7,191 @@ use Illuminate\Support\Facades\Http;
 
 class ApiController extends Controller
 {
-    
     //
+    private $baseUrl = null;
+    private $login = null;
+    private $authToken = null;
+
+    function __construct() {
+      // Asignar valores env desde el constructor
+      $this->login = env('API_LOGIN');
+      $this->authToken = env('API_AUTH_TOKEN');
+      $this->baseUrl = env('API_ENDPOINT');
+  }
+
+    /*
+    Obtener todos los productos, Limitrate = 50 x default, para obtenerlos todos hay que hacer modificaciones
+   
+    */
     public function ObtenerProductos(Request $request){
-        $login = env('API_LOGIN');
-        $authToken = env('API_AUTH_TOKEN');
-        $baseUrl = env('API_ENDPOINT');
-        $url = $baseUrl.'/products.json';
-        $response = Http::withBasicAuth($login, $authToken)->get($url);
+        $url = $this->baseUrl.'/products.json';
+        $response = Http::withBasicAuth($this->login, $this->authToken)->get($url);
         return $response->json();
     }
     public function CrearProducto(Request $request){
-        $login = env('API_LOGIN');
-        $authToken = env('API_AUTH_TOKEN');
-        $baseUrl = env('API_ENDPOINT');
-        $url = $baseUrl.'/products.json';
+
+        $url = $this->baseUrl.'/products.json';
         $qty = $request['qty'];
+        $price = $request['price'];
+        $name = $request['name'];
         $body = '{
             "product": {
-              "name": "Producto Sample",
-              "price": 15990,
-              "sku": "Borrable",
+              "name": "'. $name .'",
+              "price": '. $price .',
+              "sku": "Arma tu pack",
               "stock": '. $qty .',
               "stock_unlimited": false
             }
         }';
-        $response = Http::withBasicAuth($login, $authToken)->withBody($body, 'application/json')->post($url);
+        $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body, 'application/json')->post($url);
         return $response->json();
     }
 
     public function AsignarImagenProducto(Request $request){
-        $login = env('API_LOGIN');
-        $authToken = env('API_AUTH_TOKEN');
-        $baseUrl = env('API_ENDPOINT');
+
         $product_id = $request['product_id'];
         $image_url = $request['image_url'];
-        $url = $baseUrl."/products/{$product_id}/images.json";
+        $url = $this->baseUrl."/products/{$product_id}/images.json";
         $body_image = '{
             "image": {
                 "url": "' . $image_url . '"
                 }
         }';
-        $response = Http::withBasicAuth($login, $authToken)->withBody($body_image, 'application/json')->post($url);
+        $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body_image, 'application/json')->post($url);
         return $response->json();
     }
 
-    public function CrearVariacionProducto(Request $request){
-        $login = env('API_LOGIN');
-        $authToken = env('API_AUTH_TOKEN');
-        $baseUrl = env('API_ENDPOINT');
-        $mermelada_id = $request['mermelada_id'];
-        $pasta_id = $request['pasta_id'];
-        $product_id = $request['producto_id'];
-        $url = $baseUrl."/products/{$product_id}/variants.json";
+    public function CrearVariacionProducto($id,Request $request){
 
-        $body_variacion = '{
-        "variant": {
-            "sku": "borrable",
-            "stock_unlimited": false,
-            "options": [
-            {
-                "name": "Mermelada",
-                "value": "'. $mermelada_id .'"
-            },
-            {
-                "name": "Pasta",
-                "value": "'. $pasta_id .'"
-            }
-            ]
+      $stock = $request['stock'];
+      $variantes = $request['variant'];
+      $body_options = "";
+      $product_list = "";
+      foreach ($variantes as $key => $value) {
+        if ($key == 0) {
+          $body_options = $body_options.'{"name": "Producto '. $key+1 .'","value": "'. $value['name'] .'"}';
+          $product_list = "Producto " . $key+1 . ": ". $value['id'];
+          
         }
-        }';
-        $response = Http::withBasicAuth($login, $authToken)->withBody($body_variacion, 'application/json')->post($url);
-        return $response->json();
+        else {
+          $body_options = $body_options.',{"name": "Producto '. $key+1 .'","value": "'. $value['name'] .'"}';
+          $product_list = $product_list.", Producto " . $key+1 . ": ". $value['id'];
+        }
+      }
+      $url = $this->baseUrl."/products/{$id}/variants.json";
+
+      $body_variacion = '{
+      "variant": {
+          "sku": "Arma tu Pack",
+          "stock_unlimited": false,
+          "stock": '. $stock .',
+          "options": ['. $body_options .']
+      }
+      }';
+
+      $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body_variacion, 'application/json')->post($url);
+      $url_custom_field = $this->baseUrl."/products/{$id}/fields.json";
+      $body_cf = '{
+        "field": {
+        "id": 48871,
+        "value": "'. $product_list .'"
+        }
+      }';
+      $response_cf = Http::withBasicAuth($this->login, $this->authToken)->withBody($body_cf, 'application/json')->post($url_custom_field);
+      return $response_cf->json();
     }
 
     public function ObtenerStock($id){
-        $login = env('API_LOGIN');
-        $authToken = env('API_AUTH_TOKEN');
-        $baseUrl = env('API_ENDPOINT');
     
-        $url = $baseUrl."/products/{$id}.json";
-        $response = Http::withBasicAuth($login, $authToken)->get($url);
+        $url = $this->baseUrl."/products/{$id}.json";
+        $response = Http::withBasicAuth($this->login, $this->authToken)->get($url);
         return $response->json();
-        // return $response->json()['product'];
     }
 
-    public function DisminuirStock($p_id, Request $request)
+
+    public function DisminuirStockProducto($p_id,$qty)
     {
-        $login = env('API_LOGIN');
-        $authToken = env('API_AUTH_TOKEN');
-        $baseUrl = env('API_ENDPOINT');
+
         // Primero hay que obtener el stock actual de la variante generada
-        $qty = $request['qty'];
-        $url_obtener_stock = $baseUrl."/products/{$p_id}.json";
-        $response_obtener_stock = Http::withBasicAuth($login, $authToken)->get($url_obtener_stock);
-        $stock_actual = $response_obtener_stock->json()['product']['stock'];
-
-        $stock_nuevo = $stock_actual - $qty;
-
-        // Luego hacemos la resta del stock actual - la qty que se obtiene del body
-
-        $body = '{
-        "product": {
+        $url_obtener_stock = $this->baseUrl."/products/{$p_id}.json";
+        $response_obtener_stock = Http::withBasicAuth($this->login, $this->authToken)->get($url_obtener_stock);
+        if (empty($response_obtener_stock->json()['product']['variants'])) {
+          $stock_actual = $response_obtener_stock->json()['product']['stock'];
+          $stock_nuevo = $stock_actual - $qty;
+          // Luego hacemos la resta del stock actual - la qty que se obtiene del body
+          $body = '{
+          "product": {
             "stock": '. $stock_nuevo .'
+          }
+          }';
+          $url = $this->baseUrl."/products/{$p_id}.json";
+          $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body, 'application/json')->put($url);
+
+          return $response->json();
         }
-        }';
-
-        $url = $baseUrl."/products/{$p_id}.json";
-        $response = Http::withBasicAuth($login, $authToken)->withBody($body, 'application/json')->put($url);
-        return $response->json();
-    }
-
-
-    public function ObtenerProducto($name)
-    {
-        $login = env('API_LOGIN');
-        $authToken = env('API_AUTH_TOKEN');
-        $baseUrl = env('API_ENDPOINT');
-        $url = $baseUrl.'/products.json';
-        $response = Http::withBasicAuth($login, $authToken)->get($url);
-        // return $response->json();
-
-        $products = $response->json();
-        
-        foreach ($products as $key) {
-
-            if ($key["product"]["name"] == $name) {                
-                return $key["product"]["id"];
+        else {
+          $stock_actual = $response_obtener_stock->json()['product']['variants'][2]['stock'];
+          $stock_nuevo = $stock_actual - $qty;
+          $body = '{
+            "variant": {
+              "stock": '. $stock_nuevo .'
             }
+          }';
+          $variant_id = $response_obtener_stock->json()['product']['variants'][2]['id'];
+
+          $url = $this->baseUrl."/products/{$p_id}/variants/{$variant_id}.json";
+          $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body, 'application/json')->put($url);
+          return $response->json();
         }
-        
-        return;
-
     }
-
-
 
 
     public function HandleWebhook(Request $request)
-    {
-        
-        $login = env('API_LOGIN');
-        $authToken = env('API_AUTH_TOKEN');
-        $baseUrl = env('API_ENDPOINT');
+    {        
         // Obtener stock del producto 
         $order = $request->get(key: 'order');
-        // var_dump($order["products"]);
-        foreach ($order["products"] as $key) {
-            if ($key["sku"] == "borrable") {
-                $name = $key["name"];
-                $qty = $key["qty"];
-                $arraySplit_1 = explode("(",$name); 
-                $arraySplit_2 = explode(")",$arraySplit_1[1]);
-                $arraySplit_3 = explode(", ",$arraySplit_2[0]);
-                $mermelada_name = explode(": ",$arraySplit_3[0])[1];
-                $mermelada_id = $this->ObtenerProducto($mermelada_name);
+        $order_products = $order["products"];
+        $array_product_qty = array();
+        foreach ($order_products as $var_product) {
+          if ($var_product['sku']== "Arma tu Pack") {
+            $p_id = $var_product['id'];
 
-                $pasta_name = explode(": ",$arraySplit_3[1])[1];
-                $pasta_id = $this->ObtenerProducto($pasta_name);
-                //  Disminuir stock Mermelada
-                $url_mermelada = $baseUrl."/products/{$mermelada_id}.json";
-                $response_mermelada = Http::withBasicAuth($login, $authToken)->get($url_mermelada);
-                $stock_actual_mermelada = $response_mermelada->json()['product']['stock'];
-
-                $stock_nuevo_mermelada = $stock_actual_mermelada - $qty;
-                $body_mermelada = '{
-                "product": {
-                    "stock": '. $stock_nuevo_mermelada .'
-                }
-                }';
-
-                $url = $baseUrl."/products/{$mermelada_id}.json";
-                $response_mermelada = Http::withBasicAuth($login, $authToken)->withBody($body_mermelada, 'application/json')->put($url);
-                // return $response_mermelada->json();
-                // Disminuir stock Pasta
-
-                $url_pasta = $baseUrl."/products/{$pasta_id}.json";
-                $response_pasta = Http::withBasicAuth($login, $authToken)->get($url_pasta);
-                $stock_actual_pasta = $response_pasta->json()['product']['stock'];
-                $stock_nuevo_pasta = $stock_actual_pasta - $qty;
-                $body_pasta = '{
-                    "product": {
-                        "stock": '. $stock_nuevo_pasta .'
-                    }
-                    }';
-                $url = $baseUrl."/products/{$pasta_id}.json";
-                $response_pasta = Http::withBasicAuth($login, $authToken)->withBody($body_pasta, 'application/json')->put($url);
-                return 'ok';
+            $url = $this->baseUrl."/products/{$p_id}.json";
+            $response = Http::withBasicAuth($this->login, $this->authToken)->get($url);
+            $string_products = $response->json()['product']['fields'][0]['value'];
+            $aux_products = preg_split('([A-Za-z0-9]+( [A-Za-z0-9]+)+: )', $string_products);
+            $i = 0;
+            foreach ($aux_products as $temp_product) {
+              if ($i == 0) {
+                $i++;
+                continue;
+              }
+              array_push($array_product_qty, [intval(trim($temp_product,", ")),$var_product['qty']]);
+              $i++;
             }
-            else {
-                return;
-            }
+          }
         }
-        
-        
+        if (empty($array_product_qty)) {
+          return null;
+        }
+        foreach ($array_product_qty as $key) {
+          $this->DisminuirStockProducto($key[0],$key[1]);
+        }
+        return 'OK';
+    }
 
+    public function EliminarProducto($id) 
+    {
+      $url_delete =$this->baseUrl."/products/{$id}.json";
+      $response_delete = Http::withBasicAuth($this->login, $this->authToken)->delete($url_delete);
+      return $response_delete->json();
+    }
+
+    public function ProductosByCategoria($id)
+    {
+      $url = $this->baseUrl."/products/category/{$id}.json";
+      $response = Http::withBasicAuth($this->login, $this->authToken)->get($url);
+      return $response->json();
     }
     
 }

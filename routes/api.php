@@ -6,6 +6,7 @@ use Illuminate\Support\Facades\Http;
 
 use App\Http\Controllers\ApiController;
 
+
 /*
 |--------------------------------------------------------------------------
 | API Routes
@@ -27,11 +28,15 @@ Route::post('/create_product', [ApiController::class,'CrearProducto']);
 
 Route::post('/create_product_image', [ApiController::class, 'AsignarImagenProducto']);
 
-Route::post('/create_product_variation', [ApiController::class,'CrearVariacionProducto']);
+Route::post('/create_product_variation/{id}', [ApiController::class,'CrearVariacionProducto']);
 
 Route::get('/obtener_stock/{id}', [ApiController::class,'ObtenerStock']);
 
-Route::put('/disminuir_stock/{p_id}',[ApiController::class,'DisminuirStock'] );
-
+Route::put('/disminuir_stock/{p_id}',[ApiController::class,'DisminuirStockProducto'] );
 
 Route::post('/callback_webhook', [ApiController::class,'HandleWebhook']);
+
+Route::delete('/productos/{id}', [ApiController::class,'EliminarProducto']);
+
+Route::get('/productos/categoria/{id}', [ApiController::class,'ProductosByCategoria']);
+
