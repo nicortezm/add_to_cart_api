@@ -28,43 +28,34 @@ class ApiController extends Controller
         $response = Http::withBasicAuth($this->login, $this->authToken)->get($url);
         return $response->json();
     }
+    
     public function CrearProducto(Request $request){
 
-        $url = $this->baseUrl.'/products.json';
-        $qty = $request['qty'];
-        $price = $request['price'];
-        $name = $request['name'];
-        $body = '{
-            "product": {
-              "name": "'. $name .'",
-              "price": '. $price .',
-              "sku": "Arma tu pack",
-              "stock": '. $qty .',
-              "stock_unlimited": false
+      $url = $this->baseUrl.'/products.json';
+      $qty = $request['qty'];
+      $price = $request['price'];
+      $name = $request['name'];
+      $body = '{
+          "product": {
+            "name": "'. $name .'",
+            "price": '. $price .',
+            "sku": "Arma tu pack",
+            "stock_unlimited": false
+          }
+      }';
+      $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body, 'application/json')->post($url);
+      // Asignar imagen al producto creado
+      $product_id = $response->json()['product']['id'];
+      $image_url = $request['image_url'];
+      $url_asignar_imagen = $this->baseUrl."/products/{$product_id}/images.json";
+      $body_image = '{
+        "image": {
+            "url": "' . $image_url . '"
             }
-        }';
-        $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body, 'application/json')->post($url);
-        return $response->json();
-    }
-
-    public function AsignarImagenProducto(Request $request){
-
-        $product_id = $request['product_id'];
-        $image_url = $request['image_url'];
-        $url = $this->baseUrl."/products/{$product_id}/images.json";
-        $body_image = '{
-            "image": {
-                "url": "' . $image_url . '"
-                }
-        }';
-        $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body_image, 'application/json')->post($url);
-        return $response->json();
-    }
-
-    public function CrearVariacionProducto($id,Request $request){
-
-      $stock = $request['stock'];
-      $variantes = $request['variant'];
+      }';
+      $response_img = Http::withBasicAuth($this->login, $this->authToken)->withBody($body_image, 'application/json')->post($url_asignar_imagen);
+      // Crear variación con los productos seleccionados
+      $variantes = $request['products'];
       $body_options = "";
       $product_list = "";
       foreach ($variantes as $key => $value) {
@@ -78,19 +69,20 @@ class ApiController extends Controller
           $product_list = $product_list.", Producto " . $key+1 . ": ". $value['id'];
         }
       }
-      $url = $this->baseUrl."/products/{$id}/variants.json";
+      $url_variant = $this->baseUrl."/products/{$product_id}/variants.json";
 
-      $body_variacion = '{
+      $body_variant = '{
       "variant": {
           "sku": "Arma tu Pack",
           "stock_unlimited": false,
-          "stock": '. $stock .',
+          "stock": '. $qty .',
           "options": ['. $body_options .']
       }
       }';
 
-      $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body_variacion, 'application/json')->post($url);
-      $url_custom_field = $this->baseUrl."/products/{$id}/fields.json";
+      $response = Http::withBasicAuth($this->login, $this->authToken)->withBody($body_variant, 'application/json')->post($url_variant);
+      // Crear Custom Field
+      $url_custom_field = $this->baseUrl."/products/{$product_id}/fields.json";
       $body_cf = '{
         "field": {
         "id": 48871,
@@ -99,18 +91,10 @@ class ApiController extends Controller
       }';
       $response_cf = Http::withBasicAuth($this->login, $this->authToken)->withBody($body_cf, 'application/json')->post($url_custom_field);
       return $response_cf->json();
+
     }
 
-    public function ObtenerStock($id){
-    
-        $url = $this->baseUrl."/products/{$id}.json";
-        $response = Http::withBasicAuth($this->login, $this->authToken)->get($url);
-        return $response->json();
-    }
-
-
-    public function DisminuirStockProducto($p_id,$qty)
-    {
+    public function DisminuirStockProducto($p_id,$qty){
 
         // Primero hay que obtener el stock actual de la variante generada
         $url_obtener_stock = $this->baseUrl."/products/{$p_id}.json";
@@ -145,9 +129,7 @@ class ApiController extends Controller
         }
     }
 
-
-    public function HandleWebhook(Request $request)
-    {        
+    public function HandleWebhook(Request $request){        
         // Obtener stock del producto 
         $order = $request->get(key: 'order');
         $order_products = $order["products"];
@@ -180,15 +162,13 @@ class ApiController extends Controller
         return 'OK';
     }
 
-    public function EliminarProducto($id) 
-    {
+    public function EliminarProducto($id){
       $url_delete =$this->baseUrl."/products/{$id}.json";
       $response_delete = Http::withBasicAuth($this->login, $this->authToken)->delete($url_delete);
       return $response_delete->json();
     }
 
-    public function ProductosByCategoria($id)
-    {
+    public function ProductosByCategoria($id){
       $url = $this->baseUrl."/products/category/{$id}.json";
       $response = Http::withBasicAuth($this->login, $this->authToken)->get($url);
       return $response->json();
