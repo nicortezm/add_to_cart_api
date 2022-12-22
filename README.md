@@ -41,10 +41,10 @@ Para poder gestionar los packs, necesitamos generar un "Producto Pack" a través
 		"name": "string",
 		"id": 0
 	},
-    {
+    	{
 		"name": "string",
 		"id": 0
-	},...
+	}
 	]
 }
 ```
