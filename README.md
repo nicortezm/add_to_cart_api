@@ -153,7 +153,16 @@ Para poder gestionar los packs, necesitamos generar un "Producto Pack" a través
 # Callback Webhook
 Este proceso se desencadena automáticamente desde Jumpseller.
 
-Cuando un usuario compre algun producto, Jumpseller envía una petición con la información de la orden a este Endpoint. Dentro de la orden están los productos, dentro de la API vamos a procesar todos los productos que tengan un SKU = "Arma tu Pack". 
+Cuando un usuario compre algun producto (status="paid"), Jumpseller envía una petición con la información de la orden a este Endpoint. Dentro de la orden están los productos, dentro de la API vamos a procesar todos los productos que tengan un SKU = "Arma tu Pack". 
+
+## Flujo dentro de la API
+1. Obtiene el array de productos comprados en la orden.
+2. Por cada producto verifica si su SKU es "Arma tu Pack" (Si el SKU es distinto, omite ese producto).
+3. Se iterará de forma anidada en los custom fields de los productos que cumplan con el SKU. Con esto obtenemos los id de los productos que componen el pack. Se iran almacenando en formato (product_id, stock) dentro de un arreglo (product_array_qty).
+4. Se verifica que el largo de este arreglo sea mayor a 0. Caso contrario se termina el proceso (dentro de la ordeno no hubo ningún producto con SKU = "Arma tu Pack").
+5. Por cada producto dentro del arreglo mencionado en el punto anterior, se restará el stock actual menos la cantidad comprada en el pack (stock_actual - qty).
+
+
 
 **URL** : `/api/callback_webhook`
 
@@ -161,7 +170,7 @@ Cuando un usuario compre algun producto, Jumpseller envía una petición con la 
 
 **Autenticación Requerida** : NO
 
-**Body Example**
+**Body Example (Generado por Jumpseller)**
 
 ```json
 {
@@ -331,4 +340,92 @@ Cuando un usuario compre algun producto, Jumpseller envía una petición con la 
     ]
   }
 }
+```
+# Productos por categoria
+
+Este endpoint retorna todos los productos que pertenezcan a una determinada categoría. El id de la categoría debe ser ingresado en la url de la petición reemplazando a {category_id}.
+
+Como respuesta el Endpoint retorna un Array Json con todos los productos que pertenecen a esa categoría.
+
+**URL** : `/api/productos/categoria/{category_id}`
+
+**Method** : `GET`
+
+**Autenticación Requerida** : NO
+
+**Body Request** : VACIO
+
+**Body Response**
+```json
+[
+  {
+    "product": {
+      "id": 0,
+      "name": "string",
+      "page_title": "string",
+      "description": "string",
+      "price": 0,
+      "discount": 0,
+      "weight": 1,
+      "stock": 100,
+      "stock_unlimited": true,
+      "sku": "string",
+      "brand": "string",
+      "barcode": "string",
+      "google_product_category": "string",
+      "featured": false,
+      "status": "available",
+      "created_at": "string",
+      "updated_at": "string",
+      "package_format": "box",
+      "length": 0,
+      "width": 0,
+      "height": 0,
+      "diameter": 0,
+      "permalink": "string",
+      "categories": [
+        {
+          "id": 0,
+          "name": "string",
+          "parent_id": 0,
+          "permalink": "string"
+        }
+      ],
+      "images": [
+        {
+          "id": 0,
+          "position": 0,
+          "url": "string"
+        }
+      ],
+      "variants": [
+        {
+          "id": 0,
+          "price": 0,
+          "sku": "string",
+          "barcode": "string",
+          "stock": 100,
+          "stock_unlimited": true,
+          "options": [
+            {
+              "product_option_id": 0,
+              "product_option_value_id": 0,
+              "name": "string",
+              "option_type": "option",
+              "value": "string",
+              "custom": "string",
+              "product_option_position": 0,
+              "product_value_position": 0
+            }
+          ],
+          "image": {
+            "id": 0,
+            "position": 0,
+            "url": "string"
+          }
+        }
+      ]
+    }
+  }
+]
 ```
