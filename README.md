@@ -1,66 +1,334 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Gustoso Gourmet API
 
-<p align="center">
-<a href="https://travis-ci.org/laravel/framework"><img src="https://travis-ci.org/laravel/framework.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+Este pequeño backend nos ayuda a crear Packs en la plataforma Jumpseller, dado que la plataforma actualmente no nos ofrece algún servicio o plugin con el cual trabajar.
 
-## About Laravel
+## Lista Endpoints
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+Todos los Endpoints no requieren autenticación.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+* Crear Producto: `POST /api/create_product`
+* Webhook: `POST /api/callback_webhook`
+* Productos por categoria: `GET /productos/categoria/{category_id}`
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
 
-## Learning Laravel
+# Crear Producto
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+Para poder gestionar los packs, necesitamos generar un "Producto Pack" a través del meta producto. Este "Producto Pack" es el que el cliente compra y es el que tenemos que procesar dentro de la API.
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+## Flujo dentro de la API
+1. Crear Producto {name, price} 
+2. Asignar imagen al producto {image_url}
+3. Crear Variaciones con stock y nombres de productos {stock , variants: name}
+4. Crear Custom Fields con id de los productos {variants: id}
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains over 2000 video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
 
-## Laravel Sponsors
+**URL** : `/api/create_product`
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the Laravel [Patreon page](https://patreon.com/taylorotwell).
+**Method** : `POST`
 
-### Premium Partners
+**Autenticación Requerida** : NO
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Cubet Techno Labs](https://cubettech.com)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[Many](https://www.many.co.uk)**
-- **[Webdock, Fast VPS Hosting](https://www.webdock.io/en)**
-- **[DevSquad](https://devsquad.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[OP.GG](https://op.gg)**
-- **[WebReinvent](https://webreinvent.com/?utm_source=laravel&utm_medium=github&utm_campaign=patreon-sponsors)**
-- **[Lendio](https://lendio.com)**
+**Body constraints**
 
-## Contributing
+```json
+{
+	"name": "string",
+	"price": 0,
+	"qty": 0,
+	"image_url": "string",
+	"products": [
+	{
+		"name": "string",
+		"id": 0
+	},
+    {
+		"name": "string",
+		"id": 0
+	},...
+	]
+}
+```
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+**Body example**
 
-## Code of Conduct
+```json
+{
+	"name": "Producto Pack definitivo",
+	"price": 15990,
+	"qty": 3,
+	"image_url": "https://cdnx.jumpseller.com/fixlabs-dev/image/29497655/pack_1.jpg?1668693051",
+	"products": [
+    {
+		"name": "Mermelada Vino Merlot",
+		"id": 16256992
+	}, {
+		"name": "Mermelada Pimentón Rojo y Cerveza Negra",
+		"id": 16257014
+	}, {
+		"name": "Mermelada Frambuesa, Cerveza y Merquén",
+		"id": 16257037
+	}
+  ]
+}
+```
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+## Success Response
 
-## Security Vulnerabilities
+**Code** : `200 OK`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+**Content example**
 
-## License
+```json
+{
+  "product": {
+    "id": 0,
+    "name": "string",
+    "page_title": "string",
+    "description": "string",
+    "price": 0,
+    "discount": 0,
+    "weight": 1,
+    "stock": 100,
+    "stock_unlimited": true,
+    "sku": "string",
+    "brand": "string",
+    "barcode": "string",
+    "google_product_category": "string",
+    "featured": false,
+    "status": "available",
+    "created_at": "string",
+    "updated_at": "string",
+    "package_format": "box",
+    "length": 0,
+    "width": 0,
+    "height": 0,
+    "diameter": 0,
+    "permalink": "string",
+    "categories": [
+      {
+        "id": 0,
+        "name": "string",
+        "parent_id": 0,
+        "permalink": "string"
+      }
+    ],
+    "images": [
+      {
+        "id": 0,
+        "position": 0,
+        "url": "string"
+      }
+    ],
+    "variants": [
+      {
+        "id": 0,
+        "price": 0,
+        "sku": "string",
+        "barcode": "string",
+        "stock": 100,
+        "stock_unlimited": true,
+        "options": [
+          {
+            "product_option_id": 0,
+            "product_option_value_id": 0,
+            "name": "string",
+            "option_type": "option",
+            "value": "string",
+            "custom": "string",
+            "product_option_position": 0,
+            "product_value_position": 0
+          }
+        ],
+        "image": {
+          "id": 0,
+          "position": 0,
+          "url": "string"
+        }
+      }
+    ]
+  }
+}
+```
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+# Callback Webhook
+Este proceso se desencadena automáticamente desde Jumpseller.
+
+Cuando un usuario compre algun producto, Jumpseller envía una petición con la información de la orden a este Endpoint. Dentro de la orden están los productos, dentro de la API vamos a procesar todos los productos que tengan un SKU = "Arma tu Pack". 
+
+**URL** : `/api/callback_webhook`
+
+**Method** : `POST`
+
+**Autenticación Requerida** : NO
+
+**Body Example**
+
+```json
+{
+  "order": {
+    "id": 0,
+    "created_at": "string",
+    "status": "Paid",
+    "status_enum": "abandoned",
+    "currency": "string",
+    "subtotal": 0,
+    "tax": 0,
+    "shipping_tax": 0,
+    "shipping": 0,
+    "shipping_required": true,
+    "shipping_option": "delivery",
+    "same_day_delivery": false,
+    "total": 0,
+    "discount": 0,
+    "shipping_discount": 0,
+    "payment_method_name": "string",
+    "payment_method_type": "string",
+    "shipping_method_id": 0,
+    "shipping_method_name": "string",
+    "external_shipping_rate_id": "string",
+    "payment_information": "string",
+    "additional_information": "string",
+    "duplicate_url": "string",
+    "recovery_url": "string",
+    "checkout_url": "string",
+    "coupons": "string",
+    "customer": {
+      "customer": {
+        "id": 0,
+        "email": "string",
+        "phone": "string",
+        "fullname": "string",
+        "status": "approved",
+        "accepts_marketing": false,
+        "accepted_marketing_at": "string",
+        "cancelled_marketing_at": "string",
+        "shipping_address": {
+          "name": "string",
+          "surname": "string",
+          "address": "string",
+          "city": "string",
+          "postal": "string",
+          "municipality": "string",
+          "region": "string",
+          "country": "string"
+        },
+        "billing_address": {
+          "name": "string",
+          "surname": "string",
+          "taxid": "string",
+          "address": "string",
+          "city": "string",
+          "postal": "string",
+          "municipality": "string",
+          "region": "string",
+          "country": "string"
+        },
+        "customer_categories": [
+          {
+            "customer_category": {
+              "id": 0,
+              "name": "string",
+              "code": "string"
+            }
+          }
+        ],
+        "customer_additional_fields": [
+          {
+            "customer_additional_field": {
+              "id": 0,
+              "label": "string",
+              "value": "string",
+              "area": "string",
+              "customer_id": 0,
+              "checkout_custom_field_id": 0
+            }
+          }
+        ]
+      }
+    },
+    "shipping_address": {
+      "name": "string",
+      "surname": "string",
+      "address": "string",
+      "city": "string",
+      "postal": "string",
+      "municipality": "string",
+      "region": "string",
+      "country": "string",
+      "country_name": "string",
+      "street_number": 0,
+      "complement": "string",
+      "latitude": 0,
+      "longitude": 0
+    },
+    "billing_address": {
+      "name": "string",
+      "surname": "string",
+      "address": "string",
+      "city": "string",
+      "postal": "string",
+      "municipality": "string",
+      "region": "string",
+      "country": "string",
+      "country_name": "string",
+      "street_number": 0,
+      "complement": "string"
+    },
+    "products": [
+      {
+        "id": 0,
+        "variant_id": 0,
+        "sku": "string",
+        "name": "string",
+        "image": "string",
+        "qty": 0,
+        "price": 0,
+        "discount": 0,
+        "weight": 1,
+        "taxes": [
+          {
+            "id": 0,
+            "name": "string",
+            "rate": 0,
+            "fixed": false,
+            "tax_on_product_price": false
+          }
+        ]
+      }
+    ],
+    "tracking_number": "string",
+    "tracking_company": "string",
+    "tracking_url": "string",
+    "shipment_status": "Delivered",
+    "shipment_status_enum": "delivered",
+    "shipping_taxes": [
+      {
+        "id": 0,
+        "name": "string",
+        "country": "string",
+        "region": "string",
+        "rate": 0,
+        "fixed": false,
+        "tax_on_shipping_price": false
+      }
+    ],
+    "source": {
+      "source_name": "string",
+      "medium": "string",
+      "campaign": "string",
+      "referral_url": "string",
+      "referral_code": "string",
+      "user_agent": "string",
+      "first_page_visited": "string",
+      "first_page_visited_at": "string",
+      "referral_source": "string"
+    },
+    "additional_fields": [
+      {
+        "label": "string",
+        "value": "string"
+      }
+    ]
+  }
+}
+```
