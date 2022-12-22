@@ -429,3 +429,11 @@ Como respuesta el Endpoint retorna un Array Json con todos los productos que per
   }
 ]
 ```
+
+# Instrucciones para ENV
+
+1. Realizar una copia del archivo .env.example y renombrarlo a .env
+2. Vamos hasta el final donde tenemos 2 variables las cuales no tienen valor asignado.
+    1. `API_LOGIN` : Token Login entregado por Tienda Jumpseller.
+    2. `API_AUTH_TOKEN`: Token AuthLogin entregado por Tienda Jumpseller.
+3. Una vez reemplazados los valores el proyecto puede ser ejecutado correctamente.

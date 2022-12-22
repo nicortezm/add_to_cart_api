@@ -16,7 +16,7 @@ class ApiController extends Controller
       // Asignar valores env desde el constructor
       $this->login = env('API_LOGIN');
       $this->authToken = env('API_AUTH_TOKEN');
-      $this->baseUrl = env('API_ENDPOINT');
+      $this->baseUrl = "https://api.jumpseller.com/v1/";
   }
 
     /*
