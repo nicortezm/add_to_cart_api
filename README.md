@@ -185,7 +185,7 @@ Cuando un usuario compre algun producto (status="paid"), Jumpseller envía una p
 
 ## Diagrama Gustoso Middleware
 
-![Diagrama Gustoso Middleware](documentation/gustoso_middleware.jpg "Gustoso Middleware")
+![Diagrama Gustoso Middleware](documentation/gustoso_middleware.jpeg "Gustoso Middleware")
 
 **URL** : `/api/callback_webhook`
 
