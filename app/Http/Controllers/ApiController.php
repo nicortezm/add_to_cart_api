@@ -151,6 +151,9 @@ class ApiController extends Controller
               array_push($array_product_qty, [intval(trim($temp_product,", ")),$var_product['qty']]);
               $i++;
             }
+
+            $url_delete = $this->baseUrl."/products/{$p_id}.json";
+            $response_delete = Http::withBasicAuth($this->login, $this->authToken)->delete($url);
           }
         }
         if (empty($array_product_qty)) {

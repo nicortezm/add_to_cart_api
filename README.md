@@ -159,10 +159,16 @@ Cuando un usuario compre algun producto (status="paid"), Jumpseller envía una p
 1. Obtiene el array de productos comprados en la orden.
 2. Por cada producto verifica si su SKU es "Arma tu Pack" (Si el SKU es distinto, omite ese producto).
 3. Se iterará de forma anidada en los custom fields de los productos que cumplan con el SKU. Con esto obtenemos los id de los productos que componen el pack. Se iran almacenando en formato (product_id, stock) dentro de un arreglo (product_array_qty).
-4. Se verifica que el largo de este arreglo sea mayor a 0. Caso contrario se termina el proceso (dentro de la ordeno no hubo ningún producto con SKU = "Arma tu Pack").
-5. Por cada producto dentro del arreglo mencionado en el punto anterior, se restará el stock actual menos la cantidad comprada en el pack (stock_actual - qty).
+4. El producto con SKU "Arma tu Pack" se elimina en esta etapa ya que no es necesario.
+5. Se verifica que el largo de este arreglo sea mayor a 0. Caso contrario se termina el proceso (dentro de la ordeno no hubo ningún producto con SKU = "Arma tu Pack").
+6. Por cada producto dentro del arreglo mencionado en el punto anterior, se restará el stock actual menos la cantidad comprada en el pack (stock_actual - qty).
 
+## Diagrama de secuencia
+![Diagrama de secuencia](documentation/gustoso-diagrama.jpg "Diagrama secuencia")
 
+## Diagrama Gustoso Middleware
+
+![Diagrama Gustoso Middleware](documentation/gustoso_middleware.jpg "Gustoso Middleware")
 
 **URL** : `/api/callback_webhook`
 
