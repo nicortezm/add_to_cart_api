@@ -13,17 +13,17 @@ Todos los Endpoints no requieren autenticación.
 Indice
 ========
 
-- [Crear Producto](#instalación)
-    - [Flujo dentro de la API](#aplicación-principal)
-    - [Request y response API](#librerías-de-python)
-- [Callback Webhook](#archivos-del-proyecto)
-    - [Flujo dentro de la API](#módulos)
-    - [Diagrama de secuencia](#arbol-de-archivos)
-    - [Diagrama Gustoso Middleware](#arbol-de-archivos)
-    - [Response Webhook](#arbol-de-archivos)
-- [Productos por categoria](#manual-de-uso)
-    - [Response Webhook](#arbol-de-archivos)
-- [Instrucciones para ENV](#instalación)
+- [Crear Producto](#crear-producto)
+    - [Flujo dentro de la API](#flujo-dentro-de-la-api)
+    - [Request y response API](#request-y-response-api)
+- [Callback Webhook](#callback-webhook)
+    - [Flujo dentro de la API](#flujo-dentro-de-la-api-1)
+    - [Diagrama de secuencia](#diagrama-de-secuencia)
+    - [Diagrama Gustoso Middleware](#diagrama-gustoso-middleware)
+    - [Response Webhook](#request-webhook)
+- [Productos por categoria](#productos-por-categoria)
+    - [Response API](#response-api)
+- [Instrucciones para ENV](#instrucciones-para-env)
 
 
 # Crear Producto
@@ -193,7 +193,7 @@ Cuando un usuario compre algun producto (status="paid"), Jumpseller envía una p
 
 **Autenticación Requerida** : NO
 
-## Response Webhook
+## Request Webhook
 
 **Body Example (Generado por Jumpseller)**
 
