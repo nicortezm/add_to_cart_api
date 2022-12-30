@@ -22,7 +22,7 @@ Indice
     - [Diagrama Gustoso Middleware](#diagrama-gustoso-middleware)
     - [Response Webhook](#request-webhook)
 - [Productos por categoria](#productos-por-categoria)
-    - [Response Webhook](#response-api)
+    - [Response API](#response-api)
 - [Instrucciones para ENV](#instrucciones-para-env)
 
 
