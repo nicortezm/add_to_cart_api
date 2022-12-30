@@ -10,6 +10,21 @@ Todos los Endpoints no requieren autenticación.
 * Webhook: `POST /api/callback_webhook`
 * Productos por categoria: `GET /productos/categoria/{category_id}`
 
+Indice
+========
+
+- [Crear Producto](#instalación)
+    - [Flujo dentro de la API](#aplicación-principal)
+    - [Request y response API](#librerías-de-python)
+- [Callback Webhook](#archivos-del-proyecto)
+    - [Flujo dentro de la API](#módulos)
+    - [Diagrama de secuencia](#arbol-de-archivos)
+    - [Diagrama Gustoso Middleware](#arbol-de-archivos)
+    - [Response Webhook](#arbol-de-archivos)
+- [Productos por categoria](#manual-de-uso)
+    - [Response Webhook](#arbol-de-archivos)
+- [Instrucciones para ENV](#instalación)
+
 
 # Crear Producto
 
@@ -28,6 +43,7 @@ Para poder gestionar los packs, necesitamos generar un "Producto Pack" a través
 
 **Autenticación Requerida** : NO
 
+## Request y response API
 **Body constraints**
 
 ```json
@@ -72,7 +88,8 @@ Para poder gestionar los packs, necesitamos generar un "Producto Pack" a través
 }
 ```
 
-## Success Response
+
+**Success Response**
 
 **Code** : `200 OK`
 
@@ -175,6 +192,8 @@ Cuando un usuario compre algun producto (status="paid"), Jumpseller envía una p
 **Method** : `POST`
 
 **Autenticación Requerida** : NO
+
+## Response Webhook
 
 **Body Example (Generado por Jumpseller)**
 
@@ -360,6 +379,8 @@ Como respuesta el Endpoint retorna un Array Json con todos los productos que per
 **Autenticación Requerida** : NO
 
 **Body Request** : VACIO
+
+## Response API
 
 **Body Response**
 ```json
